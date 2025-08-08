@@ -31,3 +31,13 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Claude ###
+Claude.md
+
+### Cursor ###
+.cursor/
+
+.BangCSDL/
+
+*.md
