@@ -10,7 +10,7 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public enum ErrorCode {
-    USER_NOT_EXISTED(1002, "User not existed", HttpStatus.NOT_FOUND);
+    CITIZEN_NOT_EXISTED(1001, "Citizen not existed", HttpStatus.NOT_FOUND);
 
     int code;
     String message;
