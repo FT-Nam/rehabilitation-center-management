@@ -5,29 +5,23 @@ import com.hinnova.rehabilitation_center_management.dto.response.ApiResponse;
 import com.hinnova.rehabilitation_center_management.dto.response.LoginResponse;
 import com.hinnova.rehabilitation_center_management.service.AuthService;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@RequiredArgsConstructor
 @RequestMapping("/api/auth")
 public class AuthController {
-
-    private final AuthService authService;
-
-    public AuthController(AuthService authService) {
-        this.authService = authService;
-    }
+    AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<LoginResponse>> login(@Valid @RequestBody LoginRequest request) {
-        LoginResponse response = authService.login(request);
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(ApiResponse.<LoginResponse>builder()
-                        .code(200)
-                        .message("Đăng nhập thành công")
-                        .value(response)
-                        .build());
+    ApiResponse<LoginResponse> login(@RequestBody @Valid LoginRequest request) {
+        return ApiResponse.<LoginResponse>builder()
+                .message("Login has been successfully")
+                .value(authService.login(request))
+                .build();
     }
 }

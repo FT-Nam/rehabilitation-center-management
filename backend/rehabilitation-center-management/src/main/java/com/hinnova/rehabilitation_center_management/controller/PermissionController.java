@@ -4,48 +4,55 @@ import com.hinnova.rehabilitation_center_management.dto.PermissionDto;
 import com.hinnova.rehabilitation_center_management.dto.response.ApiResponse;
 import com.hinnova.rehabilitation_center_management.service.PermissionService;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@RequiredArgsConstructor
 @RequestMapping("/api/permissions")
 public class PermissionController {
-
-    private final PermissionService permissionService;
-
-    public PermissionController(PermissionService permissionService) {
-        this.permissionService = permissionService;
-    }
+    PermissionService permissionService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<PermissionDto>> create(@Valid @RequestBody PermissionDto dto) {
-        PermissionDto created = permissionService.create(dto);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success("Permission created successfully", created));
+    ApiResponse<PermissionDto> createPermission(@RequestBody @Valid PermissionDto dto) {
+        return ApiResponse.<PermissionDto>builder()
+                .message("Create permission has been successfully")
+                .value(permissionService.create(dto))
+                .build();
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PermissionDto>> update(@PathVariable String id,
-            @Valid @RequestBody PermissionDto dto) {
-        PermissionDto updated = permissionService.update(id, dto);
-        return ResponseEntity.ok(ApiResponse.success("Permission updated successfully", updated));
+    ApiResponse<PermissionDto> updatePermission(@PathVariable String id, @RequestBody @Valid PermissionDto dto) {
+        return ApiResponse.<PermissionDto>builder()
+                .message("Update permission has been successfully")
+                .value(permissionService.update(id, dto))
+                .build();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<PermissionDto>> getById(@PathVariable String id) {
-        PermissionDto permission = permissionService.getById(id);
-        return ResponseEntity.ok(ApiResponse.success("Permission fetched successfully", permission));
+    ApiResponse<PermissionDto> getPermissionById(@PathVariable String id) {
+        return ApiResponse.<PermissionDto>builder()
+                .value(permissionService.getById(id))
+                .build();
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<?>> getAll() {
-        return ResponseEntity.ok(ApiResponse.success("Permissions fetched successfully", permissionService.getAll()));
+    ApiResponse<List<PermissionDto>> getAllPermissions() {
+        return ApiResponse.<List<PermissionDto>>builder()
+                .value(permissionService.getAll())
+                .build();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable String id) {
+    ApiResponse<Void> deletePermission(@PathVariable String id) {
         permissionService.delete(id);
-        return ResponseEntity.noContent().build();
+        return ApiResponse.<Void>builder()
+                .message("Delete permission has been successfully")
+                .build();
     }
 }
