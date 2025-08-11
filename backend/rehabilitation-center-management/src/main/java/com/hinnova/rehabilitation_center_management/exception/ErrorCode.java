@@ -13,7 +13,8 @@ public enum ErrorCode {
     EMAIL_EXISTS(1003, "Email already exists", HttpStatus.BAD_REQUEST),
     INVALID_CREDENTIALS(1004, "Invalid username or password", HttpStatus.UNAUTHORIZED),
     UNAUTHENTICATED(1005, "Unauthenticated", HttpStatus.UNAUTHORIZED),
-
+    CITIZEN_NOT_EXISTED(1006, "Citizen not existed", HttpStatus.NOT_FOUND),
+  
     // Permission-related errors
     PERMISSION_DENIED(2001, "Permission denied", HttpStatus.FORBIDDEN),
 
