@@ -1,12 +1,18 @@
 package com.hinnova.rehabilitation_center_management.exception;
 
-import lombok.*;
+import lombok.Getter;
 
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
 @Getter
-@Setter
-public class AppException extends RuntimeException{
-    ErrorCode errorCode;
+public class AppException extends RuntimeException {
+    private final ErrorCode errorCode;
+
+    public AppException(ErrorCode errorCode) {
+        super(errorCode.getMessage());
+        this.errorCode = errorCode;
+    }
+
+    public AppException(ErrorCode errorCode, Throwable cause) {
+        super(errorCode.getMessage(), cause);
+        this.errorCode = errorCode;
+    }
 }

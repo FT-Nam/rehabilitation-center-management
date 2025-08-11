@@ -1,0 +1,35 @@
+-- CƠ SỞ DỮ LIỆU QUẢN LÝ CÁN BỘ NHÂN VIÊN
+
+-- 1. Bảng Phòng Ban / Bộ Phận
+CREATE TABLE PhongBan (
+    MaPhong VARCHAR2(50) PRIMARY KEY,
+    TenPhong VARCHAR2(255),
+    TrangThaiPhong VARCHAR2(50),
+    NguoiPhuTrach VARCHAR2(255),
+    SoLuongCanBo VARCHAR2(10),
+    DanhSachCanBo VARCHAR2(1000)
+);
+
+-- 2. Bảng Cán Bộ Nhân Viên
+CREATE TABLE CanBo (
+    MaCanBo VARCHAR2(50) PRIMARY KEY,
+    TenCanBo VARCHAR2(255),
+    SoCCCD VARCHAR2(20),
+    NgaySinh DATE,
+    GioiTinh VARCHAR2(10),
+    QueQuan VARCHAR2(255),
+    DanToc VARCHAR2(50),
+    TonGiao VARCHAR2(50),
+    QuocTich VARCHAR2(50),
+    NoiOHienTai VARCHAR2(255),
+    PhongBan VARCHAR2(50),
+    HocVi VARCHAR2(100),
+    HocHam VARCHAR2(100),
+    CapBac VARCHAR2(100),
+    ChucVu VARCHAR2(100),
+    ChucDanh VARCHAR2(100),
+    TrangThai VARCHAR2(50),
+    ThoiGianBatDau DATE,
+    ThoiGianKetThuc DATE,
+    FOREIGN KEY (PhongBan) REFERENCES PhongBan(MaPhong)
+);
