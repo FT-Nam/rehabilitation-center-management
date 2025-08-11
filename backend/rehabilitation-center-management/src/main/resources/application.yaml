@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: rehabilitation-center-management
+
+  datasource:
+    url: jdbc:oracle:thin:@//localhost:1521/XEPDB1
+    username: rehab_center
+    password: RehabCenter123!
+    driver-class-name: oracle.jdbc.OracleDriver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.OracleDialect
+
+  liquibase:
+    enabled: false
+
+app:
+  jwt:
+    secret: 3fc35280eaa58f16073a24ca3c5f0dd2d3ecbb6f89a3f013eba40c91bb775491
+    access-token-validity: 36000
