@@ -37,7 +37,7 @@ export default function BanGiaoList() {
                     <input className="form-control" placeholder="Tìm mã tài sản" value={filter.maTaiSan} onChange={e => setFilter(f => ({ ...f, maTaiSan: e.target.value }))} />
                     <input className="form-control" placeholder="Tìm người bàn giao" value={filter.nguoiBanGiao} onChange={e => setFilter(f => ({ ...f, nguoiBanGiao: e.target.value }))} />
                 </div>
-                <button className="btn btn-primary" onClick={() => nav('new')}>+ Thêm mới</button>
+                <button style={{ background: '#8B0000', color: '#fff', border: 'none', borderRadius: 3, padding: '6px 18px', fontWeight: 600 }} onClick={() => nav('new')}>+ Thêm mới</button>
             </div>
             <div className="table-responsive">
                 <table className="table table-striped">

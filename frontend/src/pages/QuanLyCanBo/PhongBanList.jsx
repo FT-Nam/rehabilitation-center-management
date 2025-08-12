@@ -37,7 +37,7 @@ export default function PhongBanList() {
                     <input className="form-control" placeholder="Tìm mã phòng" value={filter.maPhong} onChange={e => setFilter(f => ({ ...f, maPhong: e.target.value }))} />
                     <input className="form-control" placeholder="Tìm tên phòng" value={filter.tenPhong} onChange={e => setFilter(f => ({ ...f, tenPhong: e.target.value }))} />
                 </div>
-                <button className="btn btn-primary" onClick={() => nav('new')}>+ Thêm mới</button>
+                <button style={{ background: '#8B0000', color: '#fff', border: 'none', borderRadius: 3, padding: '6px 18px', fontWeight: 600 }} onClick={() => nav('new')}>+ Thêm mới</button>
             </div>
             <div className="table-responsive">
                 <table className="table table-striped">

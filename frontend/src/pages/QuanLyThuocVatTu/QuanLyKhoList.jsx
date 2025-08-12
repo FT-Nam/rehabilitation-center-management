@@ -39,7 +39,7 @@ export default function QuanLyKhoList() {
                     <input className="form-control" placeholder="Tìm SL có thể sử dụng" value={filter.soLuongSuDung} onChange={e => setFilter(f => ({ ...f, soLuongSuDung: e.target.value }))} />
                     <input className="form-control" placeholder="Tìm SL đang xử lý" value={filter.soLuongDangXuLy} onChange={e => setFilter(f => ({ ...f, soLuongDangXuLy: e.target.value }))} />
                 </div>
-                <button className="btn btn-primary" onClick={() => nav('new')}>+ Thêm mới</button>
+                <button onClick={() => nav('new')} style={{ background: '#8B0000', color: '#fff', border: 'none', borderRadius: 3, padding: '6px 18px', fontWeight: 600 }}>+ Thêm mới</button>
             </div>
             <div className="table-responsive">
                 <table className="table table-striped">

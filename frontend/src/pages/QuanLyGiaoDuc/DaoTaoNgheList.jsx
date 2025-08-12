@@ -37,7 +37,7 @@ export default function DaoTaoNgheList() {
                     <input className="form-control" placeholder="Tìm mã khóa" value={filter.maKhoa} onChange={e => setFilter(f => ({ ...f, maKhoa: e.target.value }))} />
                     <input className="form-control" placeholder="Tìm tên khóa" value={filter.tenKhoa} onChange={e => setFilter(f => ({ ...f, tenKhoa: e.target.value }))} />
                 </div>
-                <button className="btn btn-primary" onClick={() => nav('new')}>+ Thêm mới</button>
+                <button style={{ background: '#8B0000', color: '#fff', border: 'none', borderRadius: 3, padding: '6px 18px', fontWeight: 600 }} onClick={() => nav('new')}>+ Thêm mới</button>
             </div>
             <div className="table-responsive">
                 <table className="table table-striped">

@@ -18,8 +18,14 @@ const Header = () => {
   const user = useSelector((state) => state.auth.user);
 
   const handleLogout = () => {
+    // Clear localStorage first
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    
+    // Dispatch logout action to clear Redux state
     dispatch(logout());
-    // Redirect
+    
+    // Redirect to login page
     window.location.href = '/login';
   };
 
@@ -34,8 +40,8 @@ const Header = () => {
         </div>
         <div className="header-right">
           <div className="user-info">
-            <div className="user-name">{user?.username || 'Khách'}</div>
-            <div className="user-role">{user?.roles?.[0] || ''}</div>
+            <div className="user-name">{user?.fullName || user?.username || 'Khách'}</div>
+            <div className="user-role">{user?.role || ''}</div>
           </div>
           <button onClick={handleLogout} className="logout-btn" style={{ background: 'none', border: 'none', color: '#8B0000', fontWeight: 600, fontSize: 16, display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', padding: '0 8px' }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>

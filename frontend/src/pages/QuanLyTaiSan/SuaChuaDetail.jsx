@@ -81,9 +81,13 @@ export default function SuaChuaDetail({ mode }) {
             {errors.nguoiChiuTN && <div className="form-err">{errors.nguoiChiuTN.message}</div>}
           </div>
         </div>
-        <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 18 }}>
-          <button type="button" onClick={() => nav(-1)}>Quay lại</button>
-          {!isView && <button type="submit" disabled={loading || isSubmitting} style={{ background: '#8B0000', color: '#fff', border: 'none', borderRadius: 3, padding: '7px 18px', fontWeight: 600 }}>Lưu</button>}
+        <div className="form-footer">
+          <button type="button" className="form-btn back-btn" onClick={() => nav(-1)}>Quay lại</button>
+          {!isView && (
+            <button type="submit" className="form-btn save-btn" disabled={loading || isSubmitting}>
+              {isNew ? 'Thêm mới' : 'Lưu'}
+            </button>
+          )}
         </div>
       </form>
     </div>

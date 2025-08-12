@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { logout } from '../features/auth/authSlice';
 
 const getUser = () => {
   return JSON.parse(localStorage.getItem('user')) || {
@@ -30,6 +32,7 @@ function passwordStrength(pw) {
 }
 
 export default function TaiKhoan() {
+  const dispatch = useDispatch();
   const [user] = useState(getUser());
   const [showPwdModal, setShowPwdModal] = useState(false);
   const [showLogModal, setShowLogModal] = useState(false);
@@ -64,8 +67,14 @@ export default function TaiKhoan() {
   };
 
   const handleLogout = () => {
+    // Clear localStorage
     localStorage.removeItem('user');
     localStorage.removeItem('token');
+    
+    // Clear Redux state by dispatching logout action
+    dispatch(logout());
+    
+    // Redirect to login page
     window.location.href = '/login';
   };
 

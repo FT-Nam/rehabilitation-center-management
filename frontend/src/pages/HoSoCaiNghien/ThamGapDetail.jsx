@@ -1,153 +1,375 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+import { useDispatch, useSelector } from 'react-redux';
+import { 
+  fetchHocVienById, 
+  updateHocVien,
+  clearError,
+  clearSuccess 
+} from '../../features/hocVien/hocVienSlice';
 
-const initData = {
-    thoiGianThamGap: '', tenThanNhan: '', cccdThanNhan: '', loaiThamGap: '', moiQuanHe: '', hoTen: '', tenKhac: '', ngaySinh: '', gioiTinh: '', queQuan: '', danToc: '', tonGiao: '', quocTich: '', nhomMau: '', ngayCapCCCD: '', noiCapCCCD: '', ngayHetHanCCCD: '', noiThuongTru: '', noiTamTru: '', noiOHienTai: '', honNhan: '', quanHeVoiNguoiCaiNghien: ''
+// Validation schema
+const schema = yup.object({
+  tenThanNhan: yup.string().required('Tên thân nhân là bắt buộc'),
+  hoTen: yup.string().required('Họ tên là bắt buộc'),
+  thoiGianThamGap: yup.string(),
+  cccdThanNhan: yup.string(),
+  loaiThamGap: yup.string(),
+  moiQuanHe: yup.string(),
+  tenKhac: yup.string(),
+  ngaySinh: yup.string(),
+  gioiTinh: yup.string(),
+  queQuan: yup.string(),
+  danToc: yup.string(),
+  tonGiao: yup.string(),
+  quocTich: yup.string(),
+  nhomMau: yup.string(),
+  ngayCapCCCD: yup.string(),
+  noiCapCCCD: yup.string(),
+  ngayHetHanCCCD: yup.string(),
+  noiThuongTru: yup.string(),
+  noiTamTru: yup.string(),
+  noiOHienTai: yup.string(),
+  honNhan: yup.string(),
+  quanHeVoiNguoiCaiNghien: yup.string()
+});
+
+// Default values
+const defaultValues = {
+  thoiGianThamGap: '',
+  tenThanNhan: '',
+  cccdThanNhan: '',
+  loaiThamGap: '',
+  moiQuanHe: '',
+  hoTen: '',
+  tenKhac: '',
+  ngaySinh: '',
+  gioiTinh: '',
+  queQuan: '',
+  danToc: '',
+  tonGiao: '',
+  quocTich: '',
+  nhomMau: '',
+  ngayCapCCCD: '',
+  noiCapCCCD: '',
+  ngayHetHanCCCD: '',
+  noiThuongTru: '',
+  noiTamTru: '',
+  noiOHienTai: '',
+  honNhan: '',
+  quanHeVoiNguoiCaiNghien: ''
 };
 
 export default function ThamGapDetail({ mode }) {
-    const { id } = useParams();
-    const nav = useNavigate();
-    const loc = useLocation();
-    const isNew = mode === 'add' || loc.pathname.endsWith('/new');
-    const isEdit = mode === 'edit' || loc.pathname.endsWith('/edit');
-    const isView = !isNew && !isEdit;
-    const [data, setData] = useState(initData);
-    const [err, setErr] = useState('');
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const dispatch = useDispatch();
+  
+  const isNew = mode === 'add' || location.pathname.endsWith('/new');
+  const isEdit = mode === 'edit' || location.pathname.endsWith('/edit');
+  const isView = !isNew && !isEdit;
 
-    useEffect(() => {
-        if (!isNew && id) {
-            // TODO: fetch data by id
-            setData({
-                thoiGianThamGap: '2023-06-01', tenThanNhan: 'Nguyễn Thị C', cccdThanNhan: '012345678900', loaiThamGap: 'Thăm gặp trực tiếp', moiQuanHe: 'Mẹ', hoTen: 'Nguyễn Văn A', tenKhac: '', ngaySinh: '1990-01-01', gioiTinh: 'Nam', queQuan: 'Hà Nội', danToc: 'Kinh', tonGiao: 'Không', quocTich: 'Việt Nam', nhomMau: 'O', ngayCapCCCD: '2010-01-01', noiCapCCCD: 'Hà Nội', ngayHetHanCCCD: '2030-01-01', noiThuongTru: 'Hà Nội', noiTamTru: '', noiOHienTai: 'Hà Nội', honNhan: 'Độc thân', quanHeVoiNguoiCaiNghien: 'Con'
-            });
-        } else {
-            setData(initData);
-        }
-        setErr('');
-    }, [id, isNew]);
+  const { current, loading, error, success } = useSelector(state => state.hocVien);
 
-    const handleChange = e => {
-        const { name, value } = e.target;
-        setData(d => ({ ...d, [name]: value }));
-        setErr('');
-    };
+  const { register, handleSubmit, reset, formState: { errors } } = useForm({
+    resolver: yupResolver(schema),
+    defaultValues
+  });
 
-    const handleSubmit = e => {
-        e.preventDefault();
-        if (!data.tenThanNhan || !data.hoTen) {
-            setErr('Vui lòng nhập đủ thông tin bắt buộc.');
-            return;
-        }
-        // TODO: Lưu dữ liệu
-        nav(-1);
-    };
+  useEffect(() => {
+    if (!isNew && id) {
+      dispatch(fetchHocVienById(id));
+    }
+  }, [dispatch, id, isNew]);
 
+  useEffect(() => {
+    if (current && !isNew) {
+      reset(current);
+    }
+  }, [current, reset, isNew]);
+
+  useEffect(() => {
+    if (success) {
+      dispatch(clearSuccess());
+      navigate(-1);
+    }
+  }, [success, dispatch, navigate]);
+
+  useEffect(() => {
+    if (error) {
+      dispatch(clearError());
+    }
+  }, [error, dispatch]);
+
+  const onSubmit = (data) => {
+    if (isNew) {
+      console.log('Create new:', data);
+    } else if (isEdit) {
+      dispatch(updateHocVien({ id, data }));
+    }
+  };
+
+  const handleCancel = () => {
+    navigate(-1);
+  };
+
+  if (loading) {
     return (
-        <div>
-            <h1 style={{ color: '#111', fontSize: 24, fontWeight: 700, marginBottom: 18 }}>{isNew ? 'Thêm thăm gặp/mối quan hệ' : isEdit ? 'Chỉnh sửa thăm gặp/mối quan hệ' : 'Xem chi tiết thăm gặp/mối quan hệ'}</h1>
-            <form className="hv-grid-form" onSubmit={handleSubmit}>
-                <div className="hv-grid" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
-                    <div className="form-group">
-                        <label>Thời gian thăm gặp</label>
-                        <input type="date" name="thoiGianThamGap" value={data.thoiGianThamGap} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Tên thân nhân *</label>
-                        <input name="tenThanNhan" value={data.tenThanNhan} onChange={handleChange} required disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>CCCD thân nhân</label>
-                        <input name="cccdThanNhan" value={data.cccdThanNhan} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Loại thăm gặp</label>
-                        <input name="loaiThamGap" value={data.loaiThamGap} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Mối quan hệ</label>
-                        <input name="moiQuanHe" value={data.moiQuanHe} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Họ, chữ đệm và tên khai sinh *</label>
-                        <input name="hoTen" value={data.hoTen} onChange={handleChange} required disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Tên gọi khác</label>
-                        <input name="tenKhac" value={data.tenKhac} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Ngày, tháng, năm sinh</label>
-                        <input type="date" name="ngaySinh" value={data.ngaySinh} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Giới tính</label>
-                        <select name="gioiTinh" value={data.gioiTinh} onChange={handleChange} disabled={isView}>
-                            <option value="">Chọn</option>
-                            <option value="Nam">Nam</option>
-                            <option value="Nữ">Nữ</option>
-                            <option value="Khác">Khác</option>
-                        </select>
-                    </div>
-                    <div className="form-group">
-                        <label>Quê quán</label>
-                        <input name="queQuan" value={data.queQuan} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Dân tộc</label>
-                        <input name="danToc" value={data.danToc} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Tôn giáo</label>
-                        <input name="tonGiao" value={data.tonGiao} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Quốc tịch</label>
-                        <input name="quocTich" value={data.quocTich} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Nhóm máu</label>
-                        <input name="nhomMau" value={data.nhomMau} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Ngày cấp CCCD</label>
-                        <input type="date" name="ngayCapCCCD" value={data.ngayCapCCCD} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Nơi cấp CCCD</label>
-                        <input name="noiCapCCCD" value={data.noiCapCCCD} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Ngày hết hạn CCCD</label>
-                        <input type="date" name="ngayHetHanCCCD" value={data.ngayHetHanCCCD} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Nơi thường trú</label>
-                        <input name="noiThuongTru" value={data.noiThuongTru} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Nơi tạm trú</label>
-                        <input name="noiTamTru" value={data.noiTamTru} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Nơi ở hiện tại</label>
-                        <input name="noiOHienTai" value={data.noiOHienTai} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Tình trạng hôn nhân</label>
-                        <input name="honNhan" value={data.honNhan} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Quan hệ với người cai nghiện</label>
-                        <input name="quanHeVoiNguoiCaiNghien" value={data.quanHeVoiNguoiCaiNghien} onChange={handleChange} disabled={isView} />
-                    </div>
-                </div>
-                {err && <div className="form-err" style={{ marginTop: 8 }}>{err}</div>}
-                <div className="form-footer">
-                    <button type="button" onClick={() => nav(-1)} className="form-btn back-btn">Quay lại</button>
-                    {!isView && <button type="submit" className="form-btn save-btn">{isNew ? 'Thêm mới' : 'Lưu'}</button>}
-                </div>
-            </form>
+      <div className="container-fluid">
+        <div className="d-flex justify-content-center">
+          <div className="spinner-border" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
         </div>
+      </div>
     );
+  }
+
+  return (
+    <div className="container-fluid">
+      <div className="row">
+        <div className="col-12">
+          <h1 className="h3 mb-4">
+            {isNew ? 'Thêm thăm gặp/mối quan hệ' : isEdit ? 'Chỉnh sửa thăm gặp/mối quan hệ' : 'Xem chi tiết thăm gặp/mối quan hệ'}
+          </h1>
+          
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <div className="row">
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Thời gian thăm gặp</label>
+                <input
+                  {...register('thoiGianThamGap')}
+                  type="date"
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Tên thân nhân *</label>
+                <input
+                  {...register('tenThanNhan')}
+                  className={`form-control ${errors.tenThanNhan ? 'is-invalid' : ''}`}
+                  disabled={isView}
+                />
+                {errors.tenThanNhan && (
+                  <div className="invalid-feedback">{errors.tenThanNhan.message}</div>
+                )}
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">CCCD thân nhân</label>
+                <input
+                  {...register('cccdThanNhan')}
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Loại thăm gặp</label>
+                <input
+                  {...register('loaiThamGap')}
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Mối quan hệ</label>
+                <input
+                  {...register('moiQuanHe')}
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Họ, chữ đệm và tên khai sinh *</label>
+                <input
+                  {...register('hoTen')}
+                  className={`form-control ${errors.hoTen ? 'is-invalid' : ''}`}
+                  disabled={isView}
+                />
+                {errors.hoTen && (
+                  <div className="invalid-feedback">{errors.hoTen.message}</div>
+                )}
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Tên gọi khác</label>
+                <input
+                  {...register('tenKhac')}
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Ngày, tháng, năm sinh</label>
+                <input
+                  {...register('ngaySinh')}
+                  type="date"
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Giới tính</label>
+                <select
+                  {...register('gioiTinh')}
+                  className="form-control"
+                  disabled={isView}
+                >
+                  <option value="">Chọn</option>
+                  <option value="Nam">Nam</option>
+                  <option value="Nữ">Nữ</option>
+                  <option value="Khác">Khác</option>
+                </select>
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Quê quán</label>
+                <input
+                  {...register('queQuan')}
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Dân tộc</label>
+                <input
+                  {...register('danToc')}
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Tôn giáo</label>
+                <input
+                  {...register('tonGiao')}
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Quốc tịch</label>
+                <input
+                  {...register('quocTich')}
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Nhóm máu</label>
+                <input
+                  {...register('nhomMau')}
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Ngày cấp CCCD</label>
+                <input
+                  {...register('ngayCapCCCD')}
+                  type="date"
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Nơi cấp CCCD</label>
+                <input
+                  {...register('noiCapCCCD')}
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Ngày hết hạn CCCD</label>
+                <input
+                  {...register('ngayHetHanCCCD')}
+                  type="date"
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Nơi thường trú</label>
+                <input
+                  {...register('noiThuongTru')}
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Nơi tạm trú</label>
+                <input
+                  {...register('noiTamTru')}
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Nơi ở hiện tại</label>
+                <input
+                  {...register('noiOHienTai')}
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Tình trạng hôn nhân</label>
+                <input
+                  {...register('honNhan')}
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Quan hệ với người cai nghiện</label>
+                <input
+                  {...register('quanHeVoiNguoiCaiNghien')}
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+            </div>
+
+            {error && (
+              <div className="alert alert-danger" role="alert">
+                {error}
+              </div>
+            )}
+
+            <div className="form-footer">
+              <button type="button" className="form-btn back-btn" onClick={() => navigate(-1)}>Quay lại</button>
+              {!isView && (
+                <button type="submit" className="form-btn save-btn" disabled={loading}>
+                  {isNew ? 'Thêm mới' : 'Lưu'}
+                </button>
+              )}
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
 } 

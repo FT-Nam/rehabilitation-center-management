@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { deleteHocVien, fetchHocVienList } from '../../features/hocVien/hocVienSlice';
+import { deleteHocVien, fetchHocVien } from '../../features/hocVien/hocVienSlice';
 import PaginationControl from '../../components/PaginationControl';
 
 export default function DanCuList() {
@@ -14,7 +14,7 @@ export default function DanCuList() {
     const [pageSize, setPageSize] = useState(10);
 
     useEffect(() => {
-        dispatch(fetchHocVienList());
+        dispatch(fetchHocVien());
     }, [dispatch]);
 
     const data = useMemo(() => {
@@ -37,7 +37,7 @@ export default function DanCuList() {
                     <input className="form-control" placeholder="Tìm CCCD" value={filter.cccd} onChange={e => setFilter(f => ({ ...f, cccd: e.target.value }))} />
                     <input className="form-control" placeholder="Tìm họ tên" value={filter.hoTen} onChange={e => setFilter(f => ({ ...f, hoTen: e.target.value }))} />
                 </div>
-                <button className="btn btn-primary" onClick={() => nav('new')}>+ Thêm mới</button>
+                <button style={{ background: '#8B0000', color: '#fff', border: 'none', borderRadius: 3, padding: '6px 18px', fontWeight: 600 }} onClick={() => nav('new')}>+ Thêm mới</button>
             </div>
             <div className="table-responsive">
                 <table className="table table-striped">

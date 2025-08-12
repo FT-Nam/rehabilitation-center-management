@@ -1,64 +1,65 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import apiClient from '../../api/apiClient';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { hocVienService } from '../../api/apiService';
 
-export const fetchHocVienList = createAsyncThunk(
-  'hocVien/fetchList',
-  async (_, { rejectWithValue }) => {
+// Async thunks
+export const fetchHocVien = createAsyncThunk(
+  'hocVien/fetchHocVien',
+  async (params, { rejectWithValue }) => {
     try {
-      const { data } = await apiClient.get('/hoc-vien');
-      return data?.value || data || [];
+      const response = await hocVienService.fetchAll(params);
+      return response.data || response;
     } catch (error) {
-      return rejectWithValue(error?.response?.data?.message || 'Không tải được danh sách');
+      return rejectWithValue(error.message || 'Failed to fetch hoc vien');
     }
-  },
+  }
 );
 
 export const fetchHocVienById = createAsyncThunk(
-  'hocVien/fetchById',
+  'hocVien/fetchHocVienById',
   async (id, { rejectWithValue }) => {
     try {
-      const { data } = await apiClient.get(`/hoc-vien/${id}`);
-      return data?.value || data || null;
+      const response = await hocVienService.fetchById(id);
+      return response.data;
     } catch (error) {
-      return rejectWithValue(error?.response?.data?.message || 'Không tìm thấy học viên');
+      return rejectWithValue(error.message || 'Failed to fetch hoc vien');
     }
-  },
+  }
 );
 
 export const createHocVien = createAsyncThunk(
-  'hocVien/create',
-  async (payload, { rejectWithValue }) => {
+  'hocVien/createHocVien',
+  async (data, { rejectWithValue }) => {
     try {
-      const { data } = await apiClient.post('/hoc-vien', payload);
-      return data?.value || data;
+      const response = await hocVienService.create(data);
+      return response.data;
     } catch (error) {
-      return rejectWithValue(error?.response?.data?.message || 'Tạo mới thất bại');
+      return rejectWithValue(error.message || 'Failed to create hoc vien');
     }
-  },
+  }
 );
 
 export const updateHocVien = createAsyncThunk(
-  'hocVien/update',
-  async ({ id, payload }, { rejectWithValue }) => {
+  'hocVien/updateHocVien',
+  async ({ id, data }, { rejectWithValue }) => {
     try {
-      const { data } = await apiClient.put(`/hoc-vien/${id}`, payload);
-      return data?.value || data;
+      const response = await hocVienService.update(id, data);
+      return response.data;
     } catch (error) {
-      return rejectWithValue(error?.response?.data?.message || 'Cập nhật thất bại');
+      return rejectWithValue(error.message || 'Failed to update hoc vien');
     }
-  },
+  }
 );
 
 export const deleteHocVien = createAsyncThunk(
-  'hocVien/delete',
+  'hocVien/deleteHocVien',
   async (id, { rejectWithValue }) => {
     try {
-      await apiClient.delete(`/hoc-vien/${id}`);
+      await hocVienService.delete(id);
       return id;
     } catch (error) {
-      return rejectWithValue(error?.response?.data?.message || 'Xóa thất bại');
+      return rejectWithValue(error.message || 'Failed to delete hoc vien');
     }
-  },
+  }
 );
 
 const initialState = {
@@ -66,82 +67,114 @@ const initialState = {
   current: null,
   loading: false,
   error: null,
+  success: null,
+  pagination: {
+    total: 0,
+    page: 1,
+    limit: 10,
+    totalPages: 0
+  }
 };
 
 const hocVienSlice = createSlice({
   name: 'hocVien',
   initialState,
   reducers: {
-    clearCurrent(state) {
+    clearError: (state) => {
+      state.error = null;
+    },
+    clearSuccess: (state) => {
+      state.success = null;
+    },
+    clearCurrent: (state) => {
       state.current = null;
     },
   },
   extraReducers: (builder) => {
     builder
-      // fetch list
-      .addCase(fetchHocVienList.pending, (state) => {
+      // Fetch all
+      .addCase(fetchHocVien.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchHocVienList.fulfilled, (state, action) => {
+      .addCase(fetchHocVien.fulfilled, (state, action) => {
         state.loading = false;
-        state.list = Array.isArray(action.payload) ? action.payload : [];
+        state.list = action.payload.data || action.payload;
+        if (action.payload.total !== undefined) {
+          state.pagination = {
+            total: action.payload.total,
+            page: action.payload.page,
+            limit: action.payload.limit,
+            totalPages: action.payload.totalPages
+          };
+        }
       })
-      .addCase(fetchHocVienList.rejected, (state, action) => {
+      .addCase(fetchHocVien.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || 'Lỗi tải danh sách';
+        state.error = action.payload;
       })
-      // fetch by id
+      // Fetch by ID
       .addCase(fetchHocVienById.pending, (state) => {
         state.loading = true;
         state.error = null;
-        state.current = null;
       })
       .addCase(fetchHocVienById.fulfilled, (state, action) => {
         state.loading = false;
-        state.current = action.payload || null;
+        state.current = action.payload;
       })
       .addCase(fetchHocVienById.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || 'Lỗi tải chi tiết';
+        state.error = action.payload;
       })
-      // create
+      // Create
       .addCase(createHocVien.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(createHocVien.fulfilled, (state, action) => {
         state.loading = false;
-        if (action.payload) state.list.unshift(action.payload);
+        state.list.push(action.payload);
+        state.success = 'Tạo học viên thành công';
       })
       .addCase(createHocVien.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || 'Tạo mới thất bại';
+        state.error = action.payload;
       })
-      // update
+      // Update
       .addCase(updateHocVien.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(updateHocVien.fulfilled, (state, action) => {
         state.loading = false;
-        const updated = action.payload;
-        state.list = state.list.map((hv) => (hv.id === updated.id ? updated : hv));
-        state.current = updated;
+        const index = state.list.findIndex(item => item.id === action.payload.id);
+        if (index !== -1) {
+          state.list[index] = action.payload;
+        }
+        state.current = action.payload;
+        state.success = 'Cập nhật học viên thành công';
       })
       .addCase(updateHocVien.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || 'Cập nhật thất bại';
+        state.error = action.payload;
       })
-      // delete
+      // Delete
+      .addCase(deleteHocVien.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(deleteHocVien.fulfilled, (state, action) => {
-        const id = action.payload;
-        state.list = state.list.filter((hv) => hv.id !== id);
-        if (state.current?.id === id) state.current = null;
+        state.loading = false;
+        state.list = state.list.filter(item => item.id !== action.payload);
+        state.success = 'Xóa học viên thành công';
+      })
+      .addCase(deleteHocVien.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
   },
 });
 
-export const { clearCurrent } = hocVienSlice.actions;
+export const { clearError, clearSuccess, clearCurrent } = hocVienSlice.actions;
 export default hocVienSlice.reducer;
 

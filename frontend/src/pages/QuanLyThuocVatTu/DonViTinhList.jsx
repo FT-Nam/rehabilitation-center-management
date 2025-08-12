@@ -1,20 +1,20 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { deleteDonViTinh, fetchDonViTinhList } from '../../features/thuocDonViTinh/thuocDonViTinhSlice';
+import { deleteDonViTinh, fetchDonViTinh } from '../../features/thuocDonViTinh/thuocDonViTinhSlice';
 import PaginationControl from '../../components/PaginationControl';
 
 export default function DonViTinhList() {
   const dispatch = useDispatch();
   const nav = useNavigate();
-  const { list, loading } = useSelector((s) => s.donViTinh);
+  const { list, loading } = useSelector((s) => s.thuocDonViTinh);
 
   const [filter, setFilter] = useState({ maDVT: '', tenDonVi: '' });
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
   useEffect(() => {
-    dispatch(fetchDonViTinhList());
+    dispatch(fetchDonViTinh());
   }, [dispatch]);
 
   const data = useMemo(() => {

@@ -1,13 +1,13 @@
 import React from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { Outlet } from 'react-router-dom';
+import ProtectedRoute from '../components/ProtectedRoute';
 
 const PrivateRoute = () => {
-  const token = useSelector((state) => state.auth.token);
-  if (!token) {
-    return <Navigate to="/login" replace />;
-  }
-  return <Outlet />;
+  return (
+    <ProtectedRoute>
+      <Outlet />
+    </ProtectedRoute>
+  );
 };
 
 export default PrivateRoute;

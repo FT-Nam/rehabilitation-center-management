@@ -1,76 +1,186 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+import { useDispatch, useSelector } from 'react-redux';
+import { 
+  fetchSerialById, 
+  createSerial, 
+  updateSerial,
+  clearError,
+  clearSuccess 
+} from '../../features/serial/serialSlice';
 
-const initData = { maSanPham: '', maSerial: '', tinhTrang: '', khauHao: '', ngayNhap: '' };
+const schema = yup.object({
+  maSanPham: yup.string().required('Mã sản phẩm là bắt buộc'),
+  maSerial: yup.string().required('Mã serial là bắt buộc'),
+  tinhTrang: yup.string(),
+  khauHao: yup.number().typeError('Khấu hao phải là số').min(0, 'Khấu hao không được âm'),
+  ngayNhap: yup.date().typeError('Ngày nhập không hợp lệ')
+});
+
+const defaultValues = {
+  maSanPham: '',
+  maSerial: '',
+  tinhTrang: '',
+  khauHao: '',
+  ngayNhap: ''
+};
 
 export default function SerialDetail({ mode }) {
-    const { id } = useParams();
-    const nav = useNavigate();
-    const loc = useLocation();
-    const isNew = mode === 'add' || loc.pathname.endsWith('/new');
-    const isEdit = mode === 'edit' || loc.pathname.endsWith('/edit');
-    const isView = !isNew && !isEdit;
-    const [data, setData] = useState(initData);
-    const [err, setErr] = useState('');
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const dispatch = useDispatch();
+  
+  const isNew = mode === 'add' || location.pathname.endsWith('/new');
+  const isEdit = mode === 'edit' || location.pathname.endsWith('/edit');
+  const isView = !isNew && !isEdit;
 
-    useEffect(() => {
-        if (!isNew && id) {
-            // TODO: fetch data by id
-            setData({ maSanPham: 'TS01', maSerial: 'SR001', tinhTrang: 'Đang sử dụng', khauHao: '2', ngayNhap: '2023-01-01' });
-        } else {
-            setData(initData);
-        }
-        setErr('');
-    }, [id, isNew]);
+  const { current, loading, error, success } = useSelector(state => state.serial);
 
-    const handleChange = e => {
-        const { name, value } = e.target;
-        setData(d => ({ ...d, [name]: value }));
-        setErr('');
-    };
+  const { register, handleSubmit, reset, formState: { errors } } = useForm({
+    resolver: yupResolver(schema),
+    defaultValues
+  });
 
-    const handleSubmit = e => {
-        e.preventDefault();
-        if (!data.maSanPham || !data.maSerial) {
-            setErr('Vui lòng nhập đủ thông tin bắt buộc.');
-            return;
-        }
-        // TODO: Lưu dữ liệu
-        nav(-1);
-    };
+  useEffect(() => {
+    if (!isNew && id) {
+      dispatch(fetchSerialById(id));
+    }
+  }, [dispatch, id, isNew]);
 
+  useEffect(() => {
+    if (current && !isNew) {
+      reset(current);
+    }
+  }, [current, reset, isNew]);
+
+  useEffect(() => {
+    if (success) {
+      dispatch(clearSuccess());
+      navigate(-1);
+    }
+  }, [success, dispatch, navigate]);
+
+  useEffect(() => {
+    if (error) {
+      dispatch(clearError());
+    }
+  }, [error, dispatch]);
+
+  const onSubmit = (data) => {
+    if (isNew) {
+      dispatch(createSerial(data));
+    } else if (isEdit) {
+      dispatch(updateSerial({ id, data }));
+    }
+  };
+
+  const handleCancel = () => {
+    navigate(-1);
+  };
+
+  if (loading) {
     return (
-        <div>
-            <h1 style={{ color: '#111', fontSize: 24, fontWeight: 700, marginBottom: 18 }}>{isNew ? 'Thêm serial sản phẩm' : isEdit ? 'Chỉnh sửa serial sản phẩm' : 'Xem chi tiết serial sản phẩm'}</h1>
-            <form className="hv-grid-form" onSubmit={handleSubmit}>
-                <div className="hv-grid" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
-                    <div className="form-group">
-                        <label>Mã sản phẩm *</label>
-                        <input name="maSanPham" value={data.maSanPham} onChange={handleChange} required disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Mã serial *</label>
-                        <input name="maSerial" value={data.maSerial} onChange={handleChange} required disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Tình trạng</label>
-                        <input name="tinhTrang" value={data.tinhTrang} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Khấu hao theo năm</label>
-                        <input name="khauHao" value={data.khauHao} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Ngày nhập kho</label>
-                        <input type="date" name="ngayNhap" value={data.ngayNhap} onChange={handleChange} disabled={isView} />
-                    </div>
-                </div>
-                {err && <div className="form-err" style={{ marginTop: 8 }}>{err}</div>}
-                <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 18 }}>
-                    <button type="button" onClick={() => nav(-1)}>Quay lại</button>
-                    {!isView && <button type="submit" style={{ background: '#8B0000', color: '#fff', border: 'none', borderRadius: 3, padding: '7px 18px', fontWeight: 600 }}>Lưu</button>}
-                </div>
-            </form>
+      <div className="container-fluid">
+        <div className="d-flex justify-content-center">
+          <div className="spinner-border" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
         </div>
+      </div>
     );
+  }
+
+  return (
+    <div className="container-fluid">
+      <div className="row">
+        <div className="col-12">
+          <h1 className="h3 mb-4">
+            {isNew ? 'Thêm serial sản phẩm' : isEdit ? 'Chỉnh sửa serial sản phẩm' : 'Xem chi tiết serial sản phẩm'}
+          </h1>
+          
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <div className="row">
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Mã sản phẩm *</label>
+                <input
+                  {...register('maSanPham')}
+                  className={`form-control ${errors.maSanPham ? 'is-invalid' : ''}`}
+                  disabled={isView}
+                />
+                {errors.maSanPham && (
+                  <div className="invalid-feedback">{errors.maSanPham.message}</div>
+                )}
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Mã serial *</label>
+                <input
+                  {...register('maSerial')}
+                  className={`form-control ${errors.maSerial ? 'is-invalid' : ''}`}
+                  disabled={isView}
+                />
+                {errors.maSerial && (
+                  <div className="invalid-feedback">{errors.maSerial.message}</div>
+                )}
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Tình trạng</label>
+                <input
+                  {...register('tinhTrang')}
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Khấu hao theo năm</label>
+                <input
+                  {...register('khauHao')}
+                  type="number"
+                  className={`form-control ${errors.khauHao ? 'is-invalid' : ''}`}
+                  disabled={isView}
+                />
+                {errors.khauHao && (
+                  <div className="invalid-feedback">{errors.khauHao.message}</div>
+                )}
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Ngày nhập kho</label>
+                <input
+                  {...register('ngayNhap')}
+                  type="date"
+                  className={`form-control ${errors.ngayNhap ? 'is-invalid' : ''}`}
+                  disabled={isView}
+                />
+                {errors.ngayNhap && (
+                  <div className="invalid-feedback">{errors.ngayNhap.message}</div>
+                )}
+              </div>
+            </div>
+
+            {error && (
+              <div className="alert alert-danger" role="alert">
+                {error}
+              </div>
+            )}
+
+            <div className="form-footer">
+              <button type="button" className="form-btn back-btn" onClick={handleCancel}>Quay lại</button>
+              {!isView && (
+                <button type="submit" className="form-btn save-btn" disabled={loading}>
+                  {isNew ? 'Thêm mới' : 'Lưu'}
+                </button>
+              )}
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
 } 

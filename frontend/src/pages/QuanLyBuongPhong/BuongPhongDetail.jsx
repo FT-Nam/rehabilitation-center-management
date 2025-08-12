@@ -1,88 +1,223 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+import { useDispatch, useSelector } from 'react-redux';
+import { 
+  fetchBuongPhongById, 
+  createBuongPhong, 
+  updateBuongPhong,
+  clearError,
+  clearSuccess 
+} from '../../features/buongPhong/buongPhongSlice';
 
-const initData = { maPhong: '', tenPhong: '', loaiPhong: '', soLuong: '', sucChua: '', tinhTrang: '', phuTrach: '', soLuongHocVien: '' };
+const schema = yup.object({
+  maPhong: yup.string().required('Mã phòng là bắt buộc'),
+  tenPhong: yup.string().required('Tên phòng là bắt buộc'),
+  loaiPhong: yup.string(),
+  soLuong: yup.number().typeError('Số lượng phải là số').min(0, 'Số lượng không được âm'),
+  sucChua: yup.number().typeError('Sức chứa phải là số').min(0, 'Sức chứa không được âm'),
+  tinhTrang: yup.string(),
+  phuTrach: yup.string(),
+  soLuongHocVien: yup.number().typeError('Số lượng học viên phải là số').min(0, 'Số lượng học viên không được âm')
+});
+
+const defaultValues = {
+  maPhong: '',
+  tenPhong: '',
+  loaiPhong: '',
+  soLuong: '',
+  sucChua: '',
+  tinhTrang: '',
+  phuTrach: '',
+  soLuongHocVien: ''
+};
 
 export default function BuongPhongDetail({ mode }) {
-    const { id } = useParams();
-    const nav = useNavigate();
-    const loc = useLocation();
-    const isNew = mode === 'add' || loc.pathname.endsWith('/new');
-    const isEdit = mode === 'edit' || loc.pathname.endsWith('/edit');
-    const isView = !isNew && !isEdit;
-    const [data, setData] = useState(initData);
-    const [err, setErr] = useState('');
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const dispatch = useDispatch();
+  
+  const isNew = mode === 'add' || location.pathname.endsWith('/new');
+  const isEdit = mode === 'edit' || location.pathname.endsWith('/edit');
+  const isView = !isNew && !isEdit;
 
-    useEffect(() => {
-        if (!isNew && id) {
-            // TODO: fetch data by id
-            setData({ maPhong: 'P101', tenPhong: 'Phòng 101', loaiPhong: 'Ngủ', soLuong: 10, sucChua: 12, tinhTrang: 'Đang sử dụng', phuTrach: 'Nguyễn Văn A', soLuongHocVien: 10 });
-        } else {
-            setData(initData);
-        }
-        setErr('');
-    }, [id, isNew]);
+  const { current, loading, error, success } = useSelector(state => state.buongPhong);
 
-    const handleChange = e => {
-        const { name, value } = e.target;
-        setData(d => ({ ...d, [name]: value }));
-        setErr('');
-    };
+  const { register, handleSubmit, reset, formState: { errors } } = useForm({
+    resolver: yupResolver(schema),
+    defaultValues
+  });
 
-    const handleSubmit = e => {
-        e.preventDefault();
-        if (!data.maPhong || !data.tenPhong) {
-            setErr('Vui lòng nhập đủ thông tin bắt buộc.');
-            return;
-        }
-        // TODO: Lưu dữ liệu
-        nav(-1);
-    };
+  useEffect(() => {
+    if (!isNew && id) {
+      dispatch(fetchBuongPhongById(id));
+    }
+  }, [dispatch, id, isNew]);
 
+  useEffect(() => {
+    if (current && !isNew) {
+      reset(current);
+    }
+  }, [current, reset, isNew]);
+
+  useEffect(() => {
+    if (success) {
+      dispatch(clearSuccess());
+      navigate(-1);
+    }
+  }, [success, dispatch, navigate]);
+
+  useEffect(() => {
+    if (error) {
+      dispatch(clearError());
+    }
+  }, [error, dispatch]);
+
+  const onSubmit = (data) => {
+    if (isNew) {
+      dispatch(createBuongPhong(data));
+    } else if (isEdit) {
+      dispatch(updateBuongPhong({ id, data }));
+    }
+  };
+
+  const handleCancel = () => {
+    navigate(-1);
+  };
+
+  if (loading) {
     return (
-        <div>
-            <h1 style={{ color: '#111', fontSize: 24, fontWeight: 700, marginBottom: 18 }}>{isNew ? 'Thêm buồng/phòng' : isEdit ? 'Chỉnh sửa buồng/phòng' : 'Xem chi tiết buồng/phòng'}</h1>
-            <form className="hv-grid-form" onSubmit={handleSubmit}>
-                <div className="hv-grid" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
-                    <div className="form-group">
-                        <label>Mã phòng *</label>
-                        <input name="maPhong" value={data.maPhong} onChange={handleChange} required disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Tên phòng *</label>
-                        <input name="tenPhong" value={data.tenPhong} onChange={handleChange} required disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Loại phòng</label>
-                        <input name="loaiPhong" value={data.loaiPhong} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Số lượng</label>
-                        <input name="soLuong" value={data.soLuong} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Sức chứa</label>
-                        <input name="sucChua" value={data.sucChua} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Tình trạng</label>
-                        <input name="tinhTrang" value={data.tinhTrang} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Người phụ trách</label>
-                        <input name="phuTrach" value={data.phuTrach} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Số lượng học viên đang sử dụng</label>
-                        <input name="soLuongHocVien" value={data.soLuongHocVien} onChange={handleChange} disabled={isView} />
-                    </div>
-                </div>
-                {err && <div className="form-err" style={{ marginTop: 8 }}>{err}</div>}
-                <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 18 }}>
-                    <button type="button" onClick={() => nav(-1)}>Quay lại</button>
-                    {!isView && <button type="submit" style={{ background: '#8B0000', color: '#fff', border: 'none', borderRadius: 3, padding: '7px 18px', fontWeight: 600 }}>Lưu</button>}
-                </div>
-            </form>
+      <div className="container-fluid">
+        <div className="d-flex justify-content-center">
+          <div className="spinner-border" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
         </div>
+      </div>
     );
+  }
+
+  return (
+    <div className="container-fluid">
+      <div className="row">
+        <div className="col-12">
+          <h1 className="h3 mb-4">
+            {isNew ? 'Thêm buồng/phòng' : isEdit ? 'Chỉnh sửa buồng/phòng' : 'Xem chi tiết buồng/phòng'}
+          </h1>
+          
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <div className="row">
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Mã phòng *</label>
+                <input
+                  {...register('maPhong')}
+                  className={`form-control ${errors.maPhong ? 'is-invalid' : ''}`}
+                  disabled={isView}
+                />
+                {errors.maPhong && (
+                  <div className="invalid-feedback">{errors.maPhong.message}</div>
+                )}
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Tên phòng *</label>
+                <input
+                  {...register('tenPhong')}
+                  className={`form-control ${errors.tenPhong ? 'is-invalid' : ''}`}
+                  disabled={isView}
+                />
+                {errors.tenPhong && (
+                  <div className="invalid-feedback">{errors.tenPhong.message}</div>
+                )}
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Loại phòng</label>
+                <input
+                  {...register('loaiPhong')}
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Số lượng</label>
+                <input
+                  {...register('soLuong')}
+                  type="number"
+                  className={`form-control ${errors.soLuong ? 'is-invalid' : ''}`}
+                  disabled={isView}
+                />
+                {errors.soLuong && (
+                  <div className="invalid-feedback">{errors.soLuong.message}</div>
+                )}
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Sức chứa</label>
+                <input
+                  {...register('sucChua')}
+                  type="number"
+                  className={`form-control ${errors.sucChua ? 'is-invalid' : ''}`}
+                  disabled={isView}
+                />
+                {errors.sucChua && (
+                  <div className="invalid-feedback">{errors.sucChua.message}</div>
+                )}
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Tình trạng</label>
+                <input
+                  {...register('tinhTrang')}
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Người phụ trách</label>
+                <input
+                  {...register('phuTrach')}
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Số lượng học viên đang sử dụng</label>
+                <input
+                  {...register('soLuongHocVien')}
+                  type="number"
+                  className={`form-control ${errors.soLuongHocVien ? 'is-invalid' : ''}`}
+                  disabled={isView}
+                />
+                {errors.soLuongHocVien && (
+                  <div className="invalid-feedback">{errors.soLuongHocVien.message}</div>
+                )}
+              </div>
+            </div>
+
+            {error && (
+              <div className="alert alert-danger" role="alert">
+                {error}
+              </div>
+            )}
+
+            <div className="form-footer">
+              <button type="button" className="form-btn back-btn" onClick={handleCancel}>Quay lại</button>
+              {!isView && (
+                <button type="submit" className="form-btn save-btn" disabled={loading}>
+                  {isNew ? 'Thêm mới' : 'Lưu'}
+                </button>
+              )}
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
 } 

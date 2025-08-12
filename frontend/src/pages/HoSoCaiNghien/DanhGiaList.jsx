@@ -16,48 +16,52 @@ export default function DanhGiaList() {
         (!filter.hoTen || row.hoTen.toLowerCase().includes(filter.hoTen.toLowerCase())) &&
         (!filter.loai || row.loai.toLowerCase().includes(filter.loai.toLowerCase()))
     );
+    const paged = data.slice((page - 1) * pageSize, page * pageSize);
+
     return (
-        <div>
-            <div style={{ display: 'flex', gap: 16, marginBottom: 12, alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', gap: 16 }}>
-                    <input placeholder="Tìm họ tên" value={filter.hoTen} onChange={e => setFilter(f => ({ ...f, hoTen: e.target.value }))} />
-                    <input placeholder="Tìm loại đánh giá" value={filter.loai} onChange={e => setFilter(f => ({ ...f, loai: e.target.value }))} />
+        <div className="container-fluid">
+            <div className="d-flex gap-3 mb-3 align-items-center justify-content-between">
+                <div className="d-flex gap-3">
+                    <input className="form-control" placeholder="Tìm họ tên" value={filter.hoTen} onChange={e => setFilter(f => ({ ...f, hoTen: e.target.value }))} />
+                    <input className="form-control" placeholder="Tìm loại đánh giá" value={filter.loai} onChange={e => setFilter(f => ({ ...f, loai: e.target.value }))} />
                 </div>
-                <button style={{ background: '#8B0000', color: '#fff', border: 'none', borderRadius: 3, padding: '6px 18px', fontWeight: 600 }} onClick={() => nav('new')}>+ Thêm mới</button>
+                <button className="btn btn-primary" onClick={() => nav('new')}>+ Thêm mới</button>
             </div>
-            <table className="table-hocvien">
-                <thead>
-                    <tr>
-                        <th>STT</th>
-                        <th>Họ tên</th>
-                        <th>Loại</th>
-                        <th>Kết quả</th>
-                        <th>Thời gian</th>
-                        <th>Hành động</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {data.length === 0 ? (
-                        <tr><td colSpan={6} style={{ textAlign: 'center', color: '#888' }}>Chưa có dữ liệu</td></tr>
-                    ) : (
-                        data.slice((page - 1) * pageSize, page * pageSize).map((row, idx) => (
-                            <tr key={row.id}>
-                                <td>{(page - 1) * pageSize + idx + 1}</td>
-                                <td>{row.hoTen}</td>
-                                <td>{row.loai}</td>
-                                <td>{row.ketQua}</td>
-                                <td>{row.thoiGian}</td>
-                                <td>
-                                    <button title="Xem chi tiết" onClick={() => nav(`${row.id}`)} style={{ background: 'none', border: 'none', color: '#2980b9', fontSize: 18, cursor: 'pointer', marginRight: 6 }}>👁️</button>
-                                    <button title="Sửa" onClick={() => nav(`${row.id}/edit`)} style={{ background: 'none', border: 'none', color: '#f39c12', fontSize: 18, cursor: 'pointer' }}>✏️</button>
-                                    <button title="Xóa" style={{ background: 'none', border: 'none', color: '#e74c3c', fontSize: 18, cursor: 'pointer' }}>🗑️</button>
-                                </td>
-                            </tr>
-                        ))
-                    )}
-                </tbody>
-            </table>
-            <div style={{ marginTop: 16 }}>
+            <div className="table-responsive">
+                <table className="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Họ tên</th>
+                            <th>Loại</th>
+                            <th>Kết quả</th>
+                            <th>Thời gian</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {paged.length === 0 ? (
+                            <tr><td colSpan={6} className="text-center text-muted">Chưa có dữ liệu</td></tr>
+                        ) : (
+                            paged.map((row, idx) => (
+                                <tr key={row.id}>
+                                    <td>{(page - 1) * pageSize + idx + 1}</td>
+                                    <td>{row.hoTen}</td>
+                                    <td>{row.loai}</td>
+                                    <td>{row.ketQua}</td>
+                                    <td>{row.thoiGian}</td>
+                                    <td className="d-flex gap-2">
+                                        <button title="Xem chi tiết" onClick={() => nav(`${row.id}`)} className="btn btn-link p-0">👁️</button>
+                                        <button title="Sửa" onClick={() => nav(`${row.id}/edit`)} className="btn btn-link p-0 text-warning">✏️</button>
+                                        <button title="Xóa" className="btn btn-link p-0 text-danger">🗑️</button>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
+            </div>
+            <div className="mt-3">
                 <PaginationControl
                     total={data.length}
                     currentPage={page}

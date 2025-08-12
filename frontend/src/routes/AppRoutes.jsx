@@ -14,11 +14,13 @@ import QuanLyCanBoPage from '../pages/QuanLyCanBo';
 import QuanLyTaiSanPage from '../pages/QuanLyTaiSan';
 import QuanLyBuongPhongPage from '../pages/QuanLyBuongPhong';
 import QuanLyThuocVatTu from '../pages/QuanLyThuocVatTu';
-import LoginPage from '../pages/Login';
+import Login from '../pages/Login/Login';
+import Unauthorized from '../pages/Unauthorized/Unauthorized';
 
 const AppRoutes = () => (
   <Routes>
-    <Route path="/login" element={<LoginPage />} />
+    <Route path="/login" element={<Login />} />
+    <Route path="/unauthorized" element={<Unauthorized />} />
     <Route element={<PrivateRoute />}> 
       <Route path="/" element={<Dashboard />} />
       <Route path="/tai-khoan" element={<TaiKhoan />} />

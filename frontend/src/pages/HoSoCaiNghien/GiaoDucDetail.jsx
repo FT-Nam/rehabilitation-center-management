@@ -1,184 +1,472 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+import { useDispatch, useSelector } from 'react-redux';
+import { 
+  fetchHocVienById, 
+  updateHocVien,
+  clearError,
+  clearSuccess 
+} from '../../features/hocVien/hocVienSlice';
 
-const initData = {
-    soChuongTrinhGiaoDuc: '', soChuongTrinhTuVan: '', tenChuongTrinhGiaoDuc: '', thoiGianBatDauGD: '', thoiGianKetThucGD: '', diemTB: '', xepLoai: '', giaoVien: '', tenChuongTrinhTuVan: '', thoiGianBatDauTV: '', thoiGianKetThucTV: '', diemTBTuVan: '', xepLoaiTuVan: '', giaoVienTuVan: '', tongSoChuongTrinhNghe: '', tongSoChungChi: '', maLopHoc: '', tenKhoaHoc: '', loaiNganhNghe: '', tenLopHoc: '', thoiGianBatDauNghe: '', thoiGianKetThucNghe: '', diemTBNghe: '', xepLoaiNghe: '', tinhTrangChungChi: '', maChungChi: '', tongSoLanLaoDong: '', tenNoiLaoDong: '', tongSoNgayCong: '', tenChungChiLaoDong: '', thoiGianCapChungChi: ''
+// Validation schema
+const schema = yup.object({
+  tenChuongTrinhGiaoDuc: yup.string().required('Tên chương trình giáo dục là bắt buộc'),
+  giaoVien: yup.string().required('Giáo viên là bắt buộc'),
+  soChuongTrinhGiaoDuc: yup.string(),
+  soChuongTrinhTuVan: yup.string(),
+  thoiGianBatDauGD: yup.string(),
+  thoiGianKetThucGD: yup.string(),
+  diemTB: yup.string(),
+  xepLoai: yup.string(),
+  tenChuongTrinhTuVan: yup.string(),
+  thoiGianBatDauTV: yup.string(),
+  thoiGianKetThucTV: yup.string(),
+  diemTBTuVan: yup.string(),
+  xepLoaiTuVan: yup.string(),
+  giaoVienTuVan: yup.string(),
+  tongSoChuongTrinhNghe: yup.string(),
+  tongSoChungChi: yup.string(),
+  maLopHoc: yup.string(),
+  tenKhoaHoc: yup.string(),
+  loaiNganhNghe: yup.string(),
+  tenLopHoc: yup.string(),
+  thoiGianBatDauNghe: yup.string(),
+  thoiGianKetThucNghe: yup.string(),
+  diemTBNghe: yup.string(),
+  xepLoaiNghe: yup.string(),
+  tinhTrangChungChi: yup.string(),
+  maChungChi: yup.string(),
+  tongSoLanLaoDong: yup.string(),
+  tenNoiLaoDong: yup.string(),
+  tongSoNgayCong: yup.string(),
+  tenChungChiLaoDong: yup.string(),
+  thoiGianCapChungChi: yup.string()
+});
+
+// Default values
+const defaultValues = {
+  soChuongTrinhGiaoDuc: '',
+  soChuongTrinhTuVan: '',
+  tenChuongTrinhGiaoDuc: '',
+  thoiGianBatDauGD: '',
+  thoiGianKetThucGD: '',
+  diemTB: '',
+  xepLoai: '',
+  giaoVien: '',
+  tenChuongTrinhTuVan: '',
+  thoiGianBatDauTV: '',
+  thoiGianKetThucTV: '',
+  diemTBTuVan: '',
+  xepLoaiTuVan: '',
+  giaoVienTuVan: '',
+  tongSoChuongTrinhNghe: '',
+  tongSoChungChi: '',
+  maLopHoc: '',
+  tenKhoaHoc: '',
+  loaiNganhNghe: '',
+  tenLopHoc: '',
+  thoiGianBatDauNghe: '',
+  thoiGianKetThucNghe: '',
+  diemTBNghe: '',
+  xepLoaiNghe: '',
+  tinhTrangChungChi: '',
+  maChungChi: '',
+  tongSoLanLaoDong: '',
+  tenNoiLaoDong: '',
+  tongSoNgayCong: '',
+  tenChungChiLaoDong: '',
+  thoiGianCapChungChi: ''
 };
 
 export default function GiaoDucDetail({ mode }) {
-    const { id } = useParams();
-    const nav = useNavigate();
-    const loc = useLocation();
-    const isNew = mode === 'add' || loc.pathname.endsWith('/new');
-    const isEdit = mode === 'edit' || loc.pathname.endsWith('/edit');
-    const isView = !isNew && !isEdit;
-    const [data, setData] = useState(initData);
-    const [err, setErr] = useState('');
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const dispatch = useDispatch();
+  
+  const isNew = mode === 'add' || location.pathname.endsWith('/new');
+  const isEdit = mode === 'edit' || location.pathname.endsWith('/edit');
+  const isView = !isNew && !isEdit;
 
-    useEffect(() => {
-        if (!isNew && id) {
-            // TODO: fetch data by id
-            setData({
-                soChuongTrinhGiaoDuc: '2', soChuongTrinhTuVan: '1', tenChuongTrinhGiaoDuc: 'GDPL', thoiGianBatDauGD: '2023-01-01', thoiGianKetThucGD: '2023-03-01', diemTB: '8.5', xepLoai: 'Giỏi', giaoVien: 'GV A', tenChuongTrinhTuVan: 'Tư vấn tâm lý', thoiGianBatDauTV: '2023-02-01', thoiGianKetThucTV: '2023-02-15', diemTBTuVan: '8.0', xepLoaiTuVan: 'Khá', giaoVienTuVan: 'GV B', tongSoChuongTrinhNghe: '1', tongSoChungChi: '1', maLopHoc: 'L01', tenKhoaHoc: 'Tin học', loaiNganhNghe: 'CNTT', tenLopHoc: 'Lớp A', thoiGianBatDauNghe: '2023-04-01', thoiGianKetThucNghe: '2023-06-01', diemTBNghe: '8.2', xepLoaiNghe: 'Giỏi', tinhTrangChungChi: 'Đã cấp', maChungChi: 'CC01', tongSoLanLaoDong: '2', tenNoiLaoDong: 'Xưởng may', tongSoNgayCong: '30', tenChungChiLaoDong: 'Chứng chỉ A', thoiGianCapChungChi: '2023-07-01'
-            });
-        } else {
-            setData(initData);
-        }
-        setErr('');
-    }, [id, isNew]);
+  const { current, loading, error, success } = useSelector(state => state.hocVien);
 
-    const handleChange = e => {
-        const { name, value } = e.target;
-        setData(d => ({ ...d, [name]: value }));
-        setErr('');
-    };
+  const { register, handleSubmit, reset, formState: { errors } } = useForm({
+    resolver: yupResolver(schema),
+    defaultValues
+  });
 
-    const handleSubmit = e => {
-        e.preventDefault();
-        if (!data.tenChuongTrinhGiaoDuc || !data.giaoVien) {
-            setErr('Vui lòng nhập đủ thông tin bắt buộc.');
-            return;
-        }
-        // TODO: Lưu dữ liệu
-        nav(-1);
-    };
+  useEffect(() => {
+    if (!isNew && id) {
+      dispatch(fetchHocVienById(id));
+    }
+  }, [dispatch, id, isNew]);
 
+  useEffect(() => {
+    if (current && !isNew) {
+      reset(current);
+    }
+  }, [current, reset, isNew]);
+
+  useEffect(() => {
+    if (success) {
+      dispatch(clearSuccess());
+      navigate(-1);
+    }
+  }, [success, dispatch, navigate]);
+
+  useEffect(() => {
+    if (error) {
+      dispatch(clearError());
+    }
+  }, [error, dispatch]);
+
+  const onSubmit = (data) => {
+    if (isNew) {
+      console.log('Create new:', data);
+    } else if (isEdit) {
+      dispatch(updateHocVien({ id, data }));
+    }
+  };
+
+  const handleCancel = () => {
+    navigate(-1);
+  };
+
+  if (loading) {
     return (
-        <div>
-            <h1 style={{ color: '#111', fontSize: 24, fontWeight: 700, marginBottom: 18 }}>{isNew ? 'Thêm giáo dục/tư vấn/nghề' : isEdit ? 'Chỉnh sửa giáo dục/tư vấn/nghề' : 'Xem chi tiết giáo dục/tư vấn/nghề'}</h1>
-            <form className="hv-grid-form" onSubmit={handleSubmit}>
-                <div className="hv-grid" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
-                    <div className="form-group">
-                        <label>Số chương trình giáo dục đã đào tạo</label>
-                        <input name="soChuongTrinhGiaoDuc" value={data.soChuongTrinhGiaoDuc} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Số chương trình tư vấn đã tham gia</label>
-                        <input name="soChuongTrinhTuVan" value={data.soChuongTrinhTuVan} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Tên chương trình giáo dục *</label>
-                        <input name="tenChuongTrinhGiaoDuc" value={data.tenChuongTrinhGiaoDuc} onChange={handleChange} required disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Thời gian bắt đầu GD</label>
-                        <input type="date" name="thoiGianBatDauGD" value={data.thoiGianBatDauGD} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Thời gian kết thúc GD</label>
-                        <input type="date" name="thoiGianKetThucGD" value={data.thoiGianKetThucGD} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Điểm trung bình GD</label>
-                        <input name="diemTB" value={data.diemTB} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Xếp loại GD</label>
-                        <input name="xepLoai" value={data.xepLoai} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Giáo viên *</label>
-                        <input name="giaoVien" value={data.giaoVien} onChange={handleChange} required disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Tên chương trình tư vấn</label>
-                        <input name="tenChuongTrinhTuVan" value={data.tenChuongTrinhTuVan} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Thời gian bắt đầu TV</label>
-                        <input type="date" name="thoiGianBatDauTV" value={data.thoiGianBatDauTV} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Thời gian kết thúc TV</label>
-                        <input type="date" name="thoiGianKetThucTV" value={data.thoiGianKetThucTV} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Điểm trung bình TV</label>
-                        <input name="diemTBTuVan" value={data.diemTBTuVan} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Xếp loại TV</label>
-                        <input name="xepLoaiTuVan" value={data.xepLoaiTuVan} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Giáo viên TV</label>
-                        <input name="giaoVienTuVan" value={data.giaoVienTuVan} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Tổng số chương trình đào tạo nghề đã được học</label>
-                        <input name="tongSoChuongTrinhNghe" value={data.tongSoChuongTrinhNghe} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Tổng số chứng chỉ được cấp</label>
-                        <input name="tongSoChungChi" value={data.tongSoChungChi} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Mã lớp học</label>
-                        <input name="maLopHoc" value={data.maLopHoc} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Tên khóa học</label>
-                        <input name="tenKhoaHoc" value={data.tenKhoaHoc} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Loại ngành nghề</label>
-                        <input name="loaiNganhNghe" value={data.loaiNganhNghe} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Tên lớp học</label>
-                        <input name="tenLopHoc" value={data.tenLopHoc} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Thời gian bắt đầu nghề</label>
-                        <input type="date" name="thoiGianBatDauNghe" value={data.thoiGianBatDauNghe} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Thời gian kết thúc nghề</label>
-                        <input type="date" name="thoiGianKetThucNghe" value={data.thoiGianKetThucNghe} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Điểm trung bình nghề</label>
-                        <input name="diemTBNghe" value={data.diemTBNghe} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Xếp loại nghề</label>
-                        <input name="xepLoaiNghe" value={data.xepLoaiNghe} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Tình trạng được cấp chứng chỉ</label>
-                        <input name="tinhTrangChungChi" value={data.tinhTrangChungChi} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Mã chứng chỉ</label>
-                        <input name="maChungChi" value={data.maChungChi} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Tổng số lần đi lao động</label>
-                        <input name="tongSoLanLaoDong" value={data.tongSoLanLaoDong} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Tên nơi lao động trị liệu</label>
-                        <input name="tenNoiLaoDong" value={data.tenNoiLaoDong} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Tổng số ngày công</label>
-                        <input name="tongSoNgayCong" value={data.tongSoNgayCong} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Tên chứng chỉ lao động</label>
-                        <input name="tenChungChiLaoDong" value={data.tenChungChiLaoDong} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Thời gian cấp chứng chỉ</label>
-                        <input type="date" name="thoiGianCapChungChi" value={data.thoiGianCapChungChi} onChange={handleChange} disabled={isView} />
-                    </div>
-                </div>
-                {err && <div className="form-err" style={{ marginTop: 8 }}>{err}</div>}
-                <div className="form-footer">
-                    <button type="button" onClick={() => nav(-1)} className="form-btn back-btn">Quay lại</button>
-                    {!isView && <button type="submit" className="form-btn save-btn">{isNew ? 'Thêm mới' : 'Lưu'}</button>}
-                </div>
-            </form>
+      <div className="container-fluid">
+        <div className="d-flex justify-content-center">
+          <div className="spinner-border" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
         </div>
+      </div>
     );
+  }
+
+  return (
+    <div className="container-fluid">
+      <div className="row">
+        <div className="col-12">
+          <h1 className="h3 mb-4">
+            {isNew ? 'Thêm giáo dục/tư vấn/nghề' : isEdit ? 'Chỉnh sửa giáo dục/tư vấn/nghề' : 'Xem chi tiết giáo dục/tư vấn/nghề'}
+          </h1>
+          
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <div className="row">
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Số chương trình giáo dục đã đào tạo</label>
+                <input
+                  {...register('soChuongTrinhGiaoDuc')}
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Số chương trình tư vấn đã tham gia</label>
+                <input
+                  {...register('soChuongTrinhTuVan')}
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Tên chương trình giáo dục *</label>
+                <input
+                  {...register('tenChuongTrinhGiaoDuc')}
+                  className={`form-control ${errors.tenChuongTrinhGiaoDuc ? 'is-invalid' : ''}`}
+                  disabled={isView}
+                />
+                {errors.tenChuongTrinhGiaoDuc && (
+                  <div className="invalid-feedback">{errors.tenChuongTrinhGiaoDuc.message}</div>
+                )}
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Thời gian bắt đầu GD</label>
+                <input
+                  {...register('thoiGianBatDauGD')}
+                  type="date"
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Thời gian kết thúc GD</label>
+                <input
+                  {...register('thoiGianKetThucGD')}
+                  type="date"
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Điểm trung bình GD</label>
+                <input
+                  {...register('diemTB')}
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Xếp loại GD</label>
+                <input
+                  {...register('xepLoai')}
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Giáo viên *</label>
+                <input
+                  {...register('giaoVien')}
+                  className={`form-control ${errors.giaoVien ? 'is-invalid' : ''}`}
+                  disabled={isView}
+                />
+                {errors.giaoVien && (
+                  <div className="invalid-feedback">{errors.giaoVien.message}</div>
+                )}
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Tên chương trình tư vấn</label>
+                <input
+                  {...register('tenChuongTrinhTuVan')}
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Thời gian bắt đầu TV</label>
+                <input
+                  {...register('thoiGianBatDauTV')}
+                  type="date"
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Thời gian kết thúc TV</label>
+                <input
+                  {...register('thoiGianKetThucTV')}
+                  type="date"
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Điểm trung bình TV</label>
+                <input
+                  {...register('diemTBTuVan')}
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Xếp loại TV</label>
+                <input
+                  {...register('xepLoaiTuVan')}
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Giáo viên TV</label>
+                <input
+                  {...register('giaoVienTuVan')}
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Tổng số chương trình đào tạo nghề đã được học</label>
+                <input
+                  {...register('tongSoChuongTrinhNghe')}
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Tổng số chứng chỉ được cấp</label>
+                <input
+                  {...register('tongSoChungChi')}
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Mã lớp học</label>
+                <input
+                  {...register('maLopHoc')}
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Tên khóa học</label>
+                <input
+                  {...register('tenKhoaHoc')}
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Loại ngành nghề</label>
+                <input
+                  {...register('loaiNganhNghe')}
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Tên lớp học</label>
+                <input
+                  {...register('tenLopHoc')}
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Thời gian bắt đầu nghề</label>
+                <input
+                  {...register('thoiGianBatDauNghe')}
+                  type="date"
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Thời gian kết thúc nghề</label>
+                <input
+                  {...register('thoiGianKetThucNghe')}
+                  type="date"
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Điểm trung bình nghề</label>
+                <input
+                  {...register('diemTBNghe')}
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Xếp loại nghề</label>
+                <input
+                  {...register('xepLoaiNghe')}
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Tình trạng được cấp chứng chỉ</label>
+                <input
+                  {...register('tinhTrangChungChi')}
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Mã chứng chỉ</label>
+                <input
+                  {...register('maChungChi')}
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Tổng số lần đi lao động</label>
+                <input
+                  {...register('tongSoLanLaoDong')}
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Tên nơi lao động trị liệu</label>
+                <input
+                  {...register('tenNoiLaoDong')}
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Tổng số ngày công</label>
+                <input
+                  {...register('tongSoNgayCong')}
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Tên chứng chỉ lao động</label>
+                <input
+                  {...register('tenChungChiLaoDong')}
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Thời gian cấp chứng chỉ</label>
+                <input
+                  {...register('thoiGianCapChungChi')}
+                  type="date"
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+            </div>
+
+            {error && (
+              <div className="alert alert-danger" role="alert">
+                {error}
+              </div>
+            )}
+
+            <div className="form-footer">
+              <button type="button" className="form-btn back-btn" onClick={() => navigate(-1)}>Quay lại</button>
+              {!isView && (
+                <button type="submit" className="form-btn save-btn" disabled={loading}>
+                  {isNew ? 'Thêm mới' : 'Lưu'}
+                </button>
+              )}
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
 } 

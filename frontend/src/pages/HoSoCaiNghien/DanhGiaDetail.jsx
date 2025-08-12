@@ -1,120 +1,180 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+import { useDispatch, useSelector } from 'react-redux';
+import { 
+  fetchHocVienById, 
+  updateHocVien,
+  clearError,
+  clearSuccess 
+} from '../../features/hocVien/hocVienSlice';
 
-const initData = {
-    loaiDanhGia: '', tuan: '', thang: '', quy: '', thoiGianXetDuyet: '', tongDiem: '', ketQuaXepLoai: '', thoiGianKT: '', hinhThucKT: '', lyDoKT: '', thoiGianThucHienKT: '', thoiGianKL: '', hinhThucKL: '', lyDoKL: '', thoiGianThucHienKL: ''
+const schema = yup.object({
+  ngayDanhGia: yup.date().typeError('Ngày đánh giá không hợp lệ'),
+  noiDungDanhGia: yup.string().required('Nội dung đánh giá là bắt buộc'),
+  ketQuaDanhGia: yup.string(),
+  nguoiDanhGia: yup.string(),
+  ghiChu: yup.string()
+});
+
+const defaultValues = {
+  ngayDanhGia: '',
+  noiDungDanhGia: '',
+  ketQuaDanhGia: '',
+  nguoiDanhGia: '',
+  ghiChu: ''
 };
 
 export default function DanhGiaDetail({ mode }) {
-    const { id } = useParams();
-    const nav = useNavigate();
-    const loc = useLocation();
-    const isNew = mode === 'add' || loc.pathname.endsWith('/new');
-    const isEdit = mode === 'edit' || loc.pathname.endsWith('/edit');
-    const isView = !isNew && !isEdit;
-    const [data, setData] = useState(initData);
-    const [err, setErr] = useState('');
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const dispatch = useDispatch();
+  
+  const isNew = mode === 'add' || location.pathname.endsWith('/new');
+  const isEdit = mode === 'edit' || location.pathname.endsWith('/edit');
+  const isView = !isNew && !isEdit;
 
-    useEffect(() => {
-        if (!isNew && id) {
-            // TODO: fetch data by id
-            setData({
-                loaiDanhGia: 'Tháng', tuan: '1', thang: '6', quy: '2', thoiGianXetDuyet: '2023-06-01', tongDiem: '90', ketQuaXepLoai: 'Tốt', thoiGianKT: '2023-05-01', hinhThucKT: 'Bằng khen', lyDoKT: 'Học tốt', thoiGianThucHienKT: '2023-05-10', thoiGianKL: '2023-04-01', hinhThucKL: 'Cảnh cáo', lyDoKL: 'Vi phạm nội quy', thoiGianThucHienKL: '2023-04-10'
-            });
-        } else {
-            setData(initData);
-        }
-        setErr('');
-    }, [id, isNew]);
+  const { current, loading, error, success } = useSelector(state => state.hocVien);
 
-    const handleChange = e => {
-        const { name, value } = e.target;
-        setData(d => ({ ...d, [name]: value }));
-        setErr('');
-    };
+  const { register, handleSubmit, reset, formState: { errors } } = useForm({
+    resolver: yupResolver(schema),
+    defaultValues
+  });
 
-    const handleSubmit = e => {
-        e.preventDefault();
-        if (!data.loaiDanhGia) {
-            setErr('Vui lòng nhập đủ thông tin bắt buộc.');
-            return;
-        }
-        // TODO: Lưu dữ liệu
-        nav(-1);
-    };
+  useEffect(() => {
+    if (!isNew && id) {
+      dispatch(fetchHocVienById(id));
+    }
+  }, [dispatch, id, isNew]);
 
+  useEffect(() => {
+    if (current && !isNew) {
+      reset(current);
+    }
+  }, [current, reset, isNew]);
+
+  useEffect(() => {
+    if (success) {
+      dispatch(clearSuccess());
+      navigate(-1);
+    }
+  }, [success, dispatch, navigate]);
+
+  useEffect(() => {
+    if (error) {
+      dispatch(clearError());
+    }
+  }, [error, dispatch]);
+
+  const onSubmit = (data) => {
+    if (isNew) {
+      // Handle create new
+      console.log('Create new:', data);
+    } else if (isEdit) {
+      dispatch(updateHocVien({ id, data }));
+    }
+  };
+
+  const handleCancel = () => {
+    navigate(-1);
+  };
+
+  if (loading) {
     return (
-        <div>
-            <h1 style={{ color: '#111', fontSize: 24, fontWeight: 700, marginBottom: 18 }}>{isNew ? 'Thêm đánh giá/khen thưởng/kỷ luật' : isEdit ? 'Chỉnh sửa đánh giá/khen thưởng/kỷ luật' : 'Xem chi tiết đánh giá/khen thưởng/kỷ luật'}</h1>
-            <form className="hv-grid-form" onSubmit={handleSubmit}>
-                <div className="hv-grid" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
-                    <div className="form-group">
-                        <label>Loại đánh giá định kỳ (tuần/tháng/quý) *</label>
-                        <input name="loaiDanhGia" value={data.loaiDanhGia} onChange={handleChange} required disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Tuần đánh giá</label>
-                        <input name="tuan" value={data.tuan} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Tháng đánh giá</label>
-                        <input name="thang" value={data.thang} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Quý đánh giá</label>
-                        <input name="quy" value={data.quy} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Thời gian xét duyệt phiếu đánh giá</label>
-                        <input type="date" name="thoiGianXetDuyet" value={data.thoiGianXetDuyet} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Tổng điểm</label>
-                        <input name="tongDiem" value={data.tongDiem} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Kết quả xếp loại</label>
-                        <input name="ketQuaXepLoai" value={data.ketQuaXepLoai} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Thời gian quyết định khen thưởng</label>
-                        <input type="date" name="thoiGianKT" value={data.thoiGianKT} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Hình thức khen thưởng</label>
-                        <input name="hinhThucKT" value={data.hinhThucKT} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Lý do khen thưởng</label>
-                        <input name="lyDoKT" value={data.lyDoKT} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Thời gian thực hiện khen thưởng</label>
-                        <input type="date" name="thoiGianThucHienKT" value={data.thoiGianThucHienKT} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Thời gian quyết định kỷ luật</label>
-                        <input type="date" name="thoiGianKL" value={data.thoiGianKL} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Hình thức kỷ luật</label>
-                        <input name="hinhThucKL" value={data.hinhThucKL} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Lý do kỷ luật</label>
-                        <input name="lyDoKL" value={data.lyDoKL} onChange={handleChange} disabled={isView} />
-                    </div>
-                    <div className="form-group">
-                        <label>Thời gian thực hiện kỷ luật</label>
-                        <input type="date" name="thoiGianThucHienKL" value={data.thoiGianThucHienKL} onChange={handleChange} disabled={isView} />
-                    </div>
-                </div>
-                {err && <div className="form-err" style={{ marginTop: 8 }}>{err}</div>}
-                <div className="form-footer">
-                    <button type="button" onClick={() => nav(-1)} className="form-btn back-btn">Quay lại</button>
-                    {!isView && <button type="submit" className="form-btn save-btn">{isNew ? 'Thêm mới' : 'Lưu'}</button>}
-                </div>
-            </form>
+      <div className="container-fluid">
+        <div className="d-flex justify-content-center">
+          <div className="spinner-border" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
         </div>
+      </div>
     );
+  }
+
+  return (
+    <div className="container-fluid">
+      <div className="row">
+        <div className="col-12">
+          <h1 className="h3 mb-4">
+            {isNew ? 'Thêm đánh giá' : isEdit ? 'Chỉnh sửa đánh giá' : 'Xem chi tiết đánh giá'}
+          </h1>
+          
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <div className="row">
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Ngày đánh giá</label>
+                <input
+                  {...register('ngayDanhGia')}
+                  type="date"
+                  className={`form-control ${errors.ngayDanhGia ? 'is-invalid' : ''}`}
+                  disabled={isView}
+                />
+                {errors.ngayDanhGia && (
+                  <div className="invalid-feedback">{errors.ngayDanhGia.message}</div>
+                )}
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Nội dung đánh giá *</label>
+                <input
+                  {...register('noiDungDanhGia')}
+                  className={`form-control ${errors.noiDungDanhGia ? 'is-invalid' : ''}`}
+                  disabled={isView}
+                />
+                {errors.noiDungDanhGia && (
+                  <div className="invalid-feedback">{errors.noiDungDanhGia.message}</div>
+                )}
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Kết quả đánh giá</label>
+                <input
+                  {...register('ketQuaDanhGia')}
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Người đánh giá</label>
+                <input
+                  {...register('nguoiDanhGia')}
+                  className="form-control"
+                  disabled={isView}
+                />
+              </div>
+
+              <div className="col-12 mb-3">
+                <label className="form-label">Ghi chú</label>
+                <textarea
+                  {...register('ghiChu')}
+                  className="form-control"
+                  rows={3}
+                  disabled={isView}
+                />
+              </div>
+            </div>
+
+            {error && (
+              <div className="alert alert-danger" role="alert">
+                {error}
+              </div>
+            )}
+
+            <div className="form-footer">
+              <button type="button" className="form-btn back-btn" onClick={() => navigate(-1)}>Quay lại</button>
+              {!isView && (
+                <button type="submit" className="form-btn save-btn" disabled={loading}>
+                  {isNew ? 'Thêm mới' : 'Lưu'}
+                </button>
+              )}
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
 } 

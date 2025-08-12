@@ -28,12 +28,13 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: url('https://bocongan.gov.vn/Publishing_Resources/web/portal/images/bg-head.png') no-repeat center/cover, #8B0000;
+  background: url('https://dichvucong.bocongan.gov.vn/apps/bocongan/resources/image/bg-head-new.png') no-repeat center/cover;
   color: #fff;
-  height: 72px;
+  height: 80px;
   padding: 0 32px;
   font-weight: bold;
   letter-spacing: 1px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 .header-left .logo {
   height: 60px;
@@ -41,7 +42,7 @@ body {
 .header-title {
   flex: 1;
   text-align: center;
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 2px;
@@ -889,3 +890,50 @@ body {
     font-size: 0.95rem;
   }
 }
+
+/* Button color overrides to lock palette */
+.btn-primary {
+  background-color: #8B0000 !important;
+  border-color: #8B0000 !important;
+}
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active,
+.btn-primary:disabled {
+  background-color: #9c0a0a !important;
+  border-color: #9c0a0a !important;
+}
+
+.btn-secondary {
+  background-color: #6c757d !important; /* keep neutral secondary */
+  border-color: #6c757d !important;
+}
+.btn-secondary:hover,
+.btn-secondary:focus,
+.btn-secondary:active,
+.btn-secondary:disabled {
+  background-color: #5c636a !important;
+  border-color: #565e64 !important;
+}
+
+.btn-outline-primary {
+  color: #8B0000 !important;
+  border-color: #8B0000 !important;
+}
+.btn-outline-primary:hover,
+.btn-outline-primary:focus,
+.btn-outline-primary:active {
+  color: #fff !important;
+  background-color: #8B0000 !important;
+  border-color: #8B0000 !important;
+}
+
+.btn-link {
+  color: #0d6efd !important; /* keep link blue for actions */
+}
+.btn-link.text-warning { color: #f39c12 !important; }
+.btn-link.text-danger { color: #e74c3c !important; }
+
+/* Ensure form invalid styles remain visible */
+.is-invalid { border-color: #dc3545 !important; }
+.invalid-feedback { display: block; }

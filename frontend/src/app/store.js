@@ -21,6 +21,11 @@ import studentsReducer from '../features/students/studentsSlice';
 import classesReducer from '../features/classes/classesSlice';
 import teachersReducer from '../features/teachers/teachersSlice';
 import medicinesReducer from '../features/medicines/medicinesSlice';
+import buongPhongReducer from '../features/buongPhong/buongPhongSlice';
+import lichSuLuuTruReducer from '../features/lichSuLuuTru/lichSuLuuTruSlice';
+import serialReducer from '../features/serial/serialSlice';
+import danhMucTaiSanReducer from '../features/danhMucTaiSan/danhMucTaiSanSlice';
+import thuocTinhReducer from '../features/thuocTinh/thuocTinhSlice';
 
 export const store = configureStore({
   reducer: {
@@ -46,6 +51,11 @@ export const store = configureStore({
     classes: classesReducer,
     teachers: teachersReducer,
     medicines: medicinesReducer,
+    buongPhong: buongPhongReducer,
+    lichSuLuuTru: lichSuLuuTruReducer,
+    serial: serialReducer,
+    danhMucTaiSan: danhMucTaiSanReducer,
+    thuocTinh: thuocTinhReducer,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware({
     serializableCheck: false,

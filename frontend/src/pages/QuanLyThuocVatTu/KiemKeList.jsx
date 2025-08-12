@@ -37,7 +37,7 @@ export default function KiemKeList() {
                     <input className="form-control" placeholder="Tìm mã sản phẩm" value={filter.maSanPham} onChange={e => setFilter(f => ({ ...f, maSanPham: e.target.value }))} />
                     <input className="form-control" placeholder="Tìm tên sản phẩm" value={filter.tenSanPham} onChange={e => setFilter(f => ({ ...f, tenSanPham: e.target.value }))} />
                 </div>
-                <button className="btn btn-primary" onClick={() => nav('new')}>+ Thêm mới</button>
+                <button onClick={() => nav('new')} style={{ background: '#8B0000', color: '#fff', border: 'none', borderRadius: 3, padding: '6px 18px', fontWeight: 600 }}>+ Thêm mới</button>
             </div>
             <div className="table-responsive">
                 <table className="table table-striped">
